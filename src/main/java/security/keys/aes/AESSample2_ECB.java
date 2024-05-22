@@ -7,7 +7,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import security.KeyUtil;
 
-public class AESSample2 {
+public class AESSample2_ECB {
 
     /*
      * username  userpassword

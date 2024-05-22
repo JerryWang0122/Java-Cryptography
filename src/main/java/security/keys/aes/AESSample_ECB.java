@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 import security.KeyUtil;
 
 // AES 對稱式加密
-public class AESSample {
+public class AESSample_ECB {
 
     public static void main(String[] args) throws Exception {
         // 建立一個 AES 的 Key (AES-128 bits, 16 bytes)
@@ -47,12 +47,3 @@ public class AESSample {
     }
 
 }
-
-
-
-
-
-
-
-
-
