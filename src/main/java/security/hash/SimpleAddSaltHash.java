@@ -6,6 +6,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Scanner;
 
 // 加鹽 Hash
 public class SimpleAddSaltHash {
@@ -34,6 +35,24 @@ public class SimpleAddSaltHash {
         System.out.printf("原始密碼: %s%n", password);
         System.out.printf("加鹽後的哈希密碼: %s%n", hashedHexString);
 
+        // --------------------------------------------------------
+        // 7. 模擬使用者輸入密碼進行驗證
+        Scanner sc = new Scanner(System.in);
+        System.out.print("請輸入密碼: ");
+        String inputPassword = sc.nextLine();
+
+        // 8. 生成使用者輸入密碼的哈希值
+        messageDigest.reset();  // 重置
+        messageDigest.update(salt);  // 加鹽
+        byte[] inputHashedBytes = messageDigest.digest(inputPassword.getBytes());
+        String inputHashedHexString = KeyUtil.bytesToHex(inputHashedBytes);
+
+        // 9. 驗證密碼
+        if (inputHashedHexString.equals(hashedHexString)) {
+            System.out.println("驗證成功");
+        } else {
+            System.out.println("驗證失敗");
+        }
 
     }
 }
