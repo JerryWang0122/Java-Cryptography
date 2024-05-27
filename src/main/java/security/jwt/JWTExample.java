@@ -39,6 +39,9 @@ public class JWTExample {
                                                 .claim("name", "JOHN")   // 添加自訂訊息
                                                 .claim("title", "升副總經理")   // 添加自訂訊息
                                                 .claim("date", "2024-06-01")   // 添加自訂訊息
+                                                .claim("privilege", "上班可以不用打卡，遲到也沒關係")   // 添加自訂訊息
+                                                .claim("bonus", "年終至少12個月")   // 添加自訂訊息
+                                                .claim("salary", 3000000)   // 添加自訂訊息
                                                 .build();
 
         // 4. JWT : 創建 JWT(尚未簽名加密)
