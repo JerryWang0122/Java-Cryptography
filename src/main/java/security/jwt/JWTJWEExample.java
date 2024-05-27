@@ -1,9 +1,8 @@
 package security.jwt;
 
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.DirectDecrypter;
+import com.nimbusds.jose.crypto.DirectEncrypter;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -11,18 +10,18 @@ import com.nimbusds.jwt.SignedJWT;
 import security.KeyUtil;
 
 /**
- 依據（JWA、JWK）與（JWS）產生 Token（JWT）
+ 依據（JWA、JWK）與（JWE、JWS）產生 Token（JWT）
 
-     +-----+   +-----+
-     | JWK | → | JWS |
-     +-----+   +-----+
-         ↑         ↓
-     +-----+   +-----+
-     | JWA |   | JWT |
-     +-----+   +-----+
+     +-----+   +-----+   +-----+
+     | JWK | → | JWE |   | JWS |
+     +-----+   +-----+   +-----+
+        ↑            ↓   ↓
+     +-----+        +-----+
+     | JWA |        | JWT |
+     +-----+        +-----+
 
  */
-public class JWTExample {
+public class JWTJWEExample {
     public static void main(String[] args) throws Exception {
         // 1. JWA : 決定演算法 -> 使用 HS256
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
@@ -54,25 +53,34 @@ public class JWTExample {
         // 6. 進行簽名
         signedJWT.sign(jwsSigner);
 
-        // 7. 透過序列化技術產生 token : 可以被安全的傳遞、儲存
-        String token = signedJWT.serialize();  // 序列化
+        // 7. JWE: 將已簽名的 JWT 進行資料加密
+        JWEHeader jweHeader = new JWEHeader.Builder(JWEAlgorithm.DIR, EncryptionMethod.A192GCM)
+                            .contentType("JWT")
+                            .build();
 
-        System.out.printf("JWT(Token): %n%s%n", token);
+        JWEObject jweObject = new JWEObject(jweHeader, new Payload(signedJWT));
 
-        // ----------------------------------------------------
-        // 8. 驗證 JWT 簽名
+        // 8. 加密
+        String encryptionSecure = KeyUtil.generateSecret(16);
+        jweObject.encrypt(new DirectEncrypter(encryptionSecure.getBytes()));    // 直接加密
+
+        // 9. 得到加密後的 token
+        String token = jweObject.serialize();
+        System.out.printf("JWT(Token 有加密): %n%s%n", token);
+
         System.out.println();
-        System.out.println("驗證 JWT");
-        System.out.printf("已知 signingSecret: %s%n", signingSecret);
-        System.out.printf("已知 token: %s%n", token);
+        //----------------------------------------------------------------------------
+        // 10. 解密
+        JWEObject decryptedJweObject = JWEObject.parse(token);
+        decryptedJweObject.decrypt(new DirectDecrypter(encryptionSecure.getBytes()));
 
-        // 9. 從 token 中取得簽名
-        SignedJWT verifiedJWT = SignedJWT.parse(token);
+        // 11. 驗證 jwt 簽名
+        SignedJWT verifiedJWT = decryptedJweObject.getPayload().toSignedJWT();
 
-        // 10. 透過 signingSecret 取得密鑰
+        // 12. 取得密鑰
         JWSVerifier verifier = new MACVerifier(signingSecret);
 
-        // 11. 進行驗證
+        // 13. 進行驗證
         if (verifiedJWT.verify(verifier)) {
             System.out.println("JWT簽名驗證成功");
             // 顯示 payload 資料
@@ -88,7 +96,6 @@ public class JWTExample {
         } else {
             System.out.println("JWT簽名驗證失敗");
         }
-
 
     }
 }
