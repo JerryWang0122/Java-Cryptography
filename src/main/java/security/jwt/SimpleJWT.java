@@ -1,12 +1,15 @@
 package security.jwt;
 
-import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.JWTClaimsSet;
+import net.glxn.qrgen.QRCode;
 import security.KeyUtil;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 // 建立一個高鐵票的 JWT
 public class SimpleJWT {
-    public static void main(String[] args) throws JOSEException {
+    public static void main(String[] args) throws Exception {
         // 1. 高鐵公司的簽名專用密鑰 (JWK)
         String signingSecure = "abcdefghijklmnopqrstuvwxyz123456";  // 256bits -> 32bytes
 
@@ -29,5 +32,9 @@ public class SimpleJWT {
 
         System.out.printf("高鐵票 token: %s%n", token);
 
+        // 4. 產生QRCode
+        File file = new File("src/main/java/security/jwt/ticket_qrcode.png");
+        QRCode.from(token).withSize(300, 300).writeTo(new FileOutputStream(file));
+        System.out.println("QRCode 產生完畢");
     }
 }
