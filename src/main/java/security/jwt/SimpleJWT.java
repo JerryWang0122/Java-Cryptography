@@ -6,6 +6,7 @@ import security.KeyUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.UUID;
 
 // 建立一個高鐵票的 JWT
 public class SimpleJWT {
@@ -15,6 +16,7 @@ public class SimpleJWT {
 
         // 2. 建立 payload (創建 JWT 的聲明 claims) 裡面就是票務資訊
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .jwtID(UUID.randomUUID().toString())  // 生成一個不會重複的 ID 來當作 JWT ID
                 .subject("高鐵票")
                 .issuer("台灣高鐵")
                 .claim("起點", "台北")
@@ -26,6 +28,8 @@ public class SimpleJWT {
                 .claim("日期", "2024-05-27")
                 .claim("姓名", "王小明")
                 .build();
+
+        System.out.printf("JWT ID: %s%n", claimsSet.getJWTID());
 
         // 3. 對 JWT 進行簽名，並取得 token
         String token = KeyUtil.signJWT(claimsSet, signingSecure);
